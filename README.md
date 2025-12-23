@@ -28,9 +28,9 @@ This project provides a complete workflow for analyzing urban growth in Kurunega
 
 - **Multi-spectral index analysis** (NDVI, NDBI, UI, MNDWI)
 - **Time series analysis** (2013-2025)
-- **Machine learning models** (Prophet, ARIMA, Random Forest)
+- **Advanced machine learning models** (Prophet, ARIMA, Random Forest, XGBoost, LSTM)
 - **Spatial analysis** (potential growth mapping)
-- **Predictive modeling** (forecasts to 2030)
+- **Deep learning predictive modeling** (forecasts to 2030)
 
 ### 🗺️ Study Area
 
@@ -62,10 +62,11 @@ This project provides a complete workflow for analyzing urban growth in Kurunega
 - Planning recommendations
 
 ### 4. **Predictive Modeling**
-- Multiple model comparison (Prophet, ARIMA, Random Forest)
-- Forecast to 2030 with confidence intervals
+- Six model comparison (Prophet, ARIMA, Random Forest, XGBoost, LSTM, K-Means)
+- LSTM-based forecast to 2030 with confidence intervals
+- Iterative prediction using deep learning
 - Year-by-year growth projections
-- Infrastructure planning insights
+- Infrastructure planning insights with uncertainty quantification
 
 ---
 
@@ -79,16 +80,16 @@ Urbanization_Kurunegala/
 │   └── kurunegala_District_AOI.geojson    # Kurunegala district boundary
 │
 ├── Code/                                   # Analysis notebooks
-│   ├── AOI_POLYGON.ipynb                  # Extract district boundary
-│   ├── Urbanization Analysis for Kurunegala District.ipynb
-│   │                                      # Main urbanization analysis
-│   ├── Potential_growth_Map/
-│   │   └── Potential_Growth_map.ipynb    # Growth potential mapping
-│   └── Model_Comparison/
-│       └── Prediction_models_comparrison.ipynb
+│   ├── AOI Kurunegala District.ipynb     # Extract district boundary
+│   ├── Urbanization Analysis.ipynb       # Main urbanization analysis
+│   ├── Potential Urban Growth Area Mapping/
+│   │   └── Potential Urban Growth Area Mapping.ipynb
+│   │                                      # Growth potential mapping
+│   └── Urban Growth Prediction Models Comparison/
+│       └── Urban Growth Prediction Models Comparison.ipynb
 │                                          # Future predictions (2026-2030)
 │
-├── Processed_Kurunegala_Urban/            # Analysis outputs
+├── Processed_Monthly/                     # Analysis outputs
 │   ├── NDVI_YYYYMMDD.tif                 # Vegetation indices
 │   ├── NDBI_YYYYMMDD.tif                 # Built-up indices
 │   ├── UI_YYYYMMDD.tif                   # Urban indices
@@ -98,14 +99,16 @@ Urbanization_Kurunegala/
 │   ├── Kurunegala_Urbanization_Stats.csv # Statistics
 │   └── *.png                             # Visualizations
 │
-├── Potential_Growth_Kurunegala/           # Growth potential outputs
+├── Potential_Growth_Areas/                # Growth potential outputs
 │   ├── Kurunegala_Potential_Score.tif    # Development scores
 │   ├── Kurunegala_Potential_Zones.tif    # Zone classifications
 │   └── *.png                             # Maps and charts
 │
-├── Model_Comparison_Kurunegala/           # Prediction outputs
-│   ├── Kurunegala_Forecast_2026_2030.csv # Year-by-year forecasts
-│   ├── Model_Comparison_Results.csv      # Model performance
+├── Urban_Growth_Predictions/              # Prediction outputs
+│   ├── Kurunegala_Forecast_2026_2030_LSTM.csv  # LSTM year-by-year forecasts
+│   ├── Model_Comparison_Results.csv      # All 6 models performance
+│   ├── KMeans_Temporal_Clusters.png      # Growth phase clusters
+│   ├── Kurunegala_Clusters.csv           # Cluster assignments
 │   └── *.png                             # Forecast visualizations
 │
 └── README.md                              # This file
@@ -126,7 +129,7 @@ Urbanization_Kurunegala/
 Install all dependencies using:
 
 ```bash
-pip install geopandas rasterio numpy pandas matplotlib seaborn tqdm prophet statsmodels scikit-learn
+pip install geopandas rasterio numpy pandas matplotlib seaborn tqdm prophet statsmodels scikit-learn xgboost tensorflow
 ```
 
 **Core Libraries:**
@@ -137,10 +140,12 @@ pip install geopandas rasterio numpy pandas matplotlib seaborn tqdm prophet stat
 - `matplotlib` / `seaborn` - Visualization
 - `tqdm` - Progress bars
 
-**Machine Learning:**
+**Machine Learning & Deep Learning:**
 - `prophet` - Facebook's time series forecasting
 - `statsmodels` - ARIMA modeling
-- `scikit-learn` - Random Forest and clustering
+- `scikit-learn` - Random Forest and K-Means clustering
+- `xgboost` - Gradient boosting (XGBoost)
+- `tensorflow` / `keras` - Deep learning (LSTM neural networks)
 
 ### GIS Software (Optional but Recommended)
 
@@ -213,7 +218,7 @@ pip install -r requirements.txt
 Or manually install:
 
 ```bash
-pip install geopandas rasterio numpy pandas matplotlib seaborn tqdm prophet statsmodels scikit-learn scipy plotly
+pip install geopandas rasterio numpy pandas matplotlib seaborn tqdm prophet statsmodels scikit-learn xgboost tensorflow scipy plotly
 ```
 
 ### 3. Verify Installation
@@ -233,7 +238,7 @@ print("✅ All libraries installed successfully!")
 
 ### Step 1: Extract Area of Interest (AOI)
 
-**Notebook:** `Code/AOI_POLYGON.ipynb`
+**Notebook:** `Code/AOI Kurunegala District.ipynb`
 
 ```python
 # Run this notebook to extract Kurunegala district boundary
@@ -251,7 +256,7 @@ print("✅ All libraries installed successfully!")
 
 ### Step 2: Urbanization Analysis (Main Analysis)
 
-**Notebook:** `Code/Urbanization Analysis for Kurunegala District.ipynb`
+**Notebook:** `Code/Urbanization Analysis.ipynb`
 
 **⚠️ Prerequisites:**
 - Landsat data organized in year folders
@@ -275,18 +280,18 @@ print("✅ All libraries installed successfully!")
 - MNDWI < 0.0 (Not water)
 
 **Outputs:**
-- `Processed_Kurunegala_Urban/` folder with:
-  - Urban classification maps (GeoTIFF)
-  - Spectral indices (GeoTIFF)
-  - Statistics CSV
-  - Trend visualizations
-  - Change detection maps
+- `Processed_Monthly/` folder with:
+  - Urban classification maps (Urban_YYYYMMDD.tif)
+  - Spectral indices (NDVI, NDBI, UI, MNDWI)
+  - Kurunegala_Urbanization_Stats.csv
+  - Trend visualizations (6-panel analysis)
+  - Change detection maps (4-class classifications)
 
 ---
 
 ### Step 3: Potential Growth Mapping (Optional)
 
-**Notebook:** `Code/Potential_growth_Map/Potential_Growth_map.ipynb`
+**Notebook:** `Code/Potential Urban Growth Area Mapping/Potential Urban Growth Area Mapping.ipynb`
 
 **⚠️ Prerequisites:**
 - Completed Step 2 (Urbanization Analysis)
@@ -307,11 +312,11 @@ print("✅ All libraries installed successfully!")
 - **Zone 1:** Very Low Potential
 
 **Outputs:**
-- `Potential_Growth_Kurunegala/` folder with:
-  - Potential score maps (GeoTIFF)
-  - Zone classifications (GeoTIFF)
-  - Analysis visualizations
-  - Planning recommendations
+- `Potential_Growth_Areas/` folder with:
+  - Kurunegala_Potential_Score.tif (0-1 normalized scores)
+  - Kurunegala_Potential_Zones.tif (5-zone classification)
+  - Analysis visualizations (multi-panel maps)
+  - Planning recommendations and statistics
 
 **Runtime:** 2-3 minutes
 
@@ -319,30 +324,43 @@ print("✅ All libraries installed successfully!")
 
 ### Step 4: Future Predictions (2026-2030)
 
-**Notebook:** `Code/Model_Comparison/Prediction_models_comparrison.ipynb`
+**Notebook:** `Code/Urban Growth Prediction Models Comparison/Urban Growth Prediction Models Comparison.ipynb`
 
 **⚠️ Prerequisites:**
 - Completed Step 2 (Urbanization Analysis)
+- Kurunegala_Urbanization_Stats.csv generated
 
 **What it does:**
-1. Loads urbanization statistics
-2. Trains and compares 3 prediction models:
-   - **Prophet** (Facebook's time series)
-   - **ARIMA** (Statistical model)
-   - **Random Forest** (Machine learning)
-3. Evaluates models using MAE, RMSE, R², MAPE
-4. Selects best model
-5. Generates forecasts to 2030
-6. Provides urban planning insights
+1. Loads urbanization statistics from CSV
+2. Trains and compares **6 prediction models**:
+   - **Prophet** (Facebook's time series forecasting)
+   - **ARIMA** (AutoRegressive Integrated Moving Average)
+   - **Random Forest** (Ensemble machine learning)
+   - **XGBoost** (Gradient boosting - typically best accuracy)
+   - **LSTM** (Deep learning neural network - BEST MODEL)
+   - **K-Means** (Clustering for growth phase identification)
+3. Evaluates models using MAE, RMSE, R², MAPE metrics
+4. Identifies LSTM as best performing model
+5. **Uses LSTM for final 2026-2030 forecasts** with iterative prediction
+6. Generates confidence intervals (95%) based on training errors
+7. Provides detailed urban planning insights
+
+**Model Performance:**
+- **LSTM** achieves lowest RMSE (best accuracy)
+- Captures non-linear urban growth patterns
+- Learns long-term dependencies from historical data
+- Iterative forecasting maintains temporal coherence
 
 **Outputs:**
-- `Model_Comparison_Kurunegala/` folder with:
-  - Model comparison results (CSV)
-  - 2026-2030 forecasts (CSV)
-  - Forecast visualizations
-  - Growth analysis charts
+- `Urban_Growth_Predictions/` folder with:
+  - **Kurunegala_Forecast_2026_2030_LSTM.csv** - Final LSTM predictions
+  - Model_Comparison_Results.csv - All 6 models performance
+  - Model_Forecast_Comparison.png - Visual comparison
+  - Kurunegala_Urbanization_Forecast_2026_2030_LSTM.png - LSTM forecast
+  - KMeans_Temporal_Clusters.png - Growth phase clusters
+  - Kurunegala_Clusters.csv - Cluster assignments
 
-**Runtime:** 1-2 minutes
+**Runtime:** 3-5 minutes (LSTM training takes longer but provides best accuracy)
 
 ---
 
@@ -426,11 +444,21 @@ Date,Year,Month,Urban_Pixels,Valid_Pixels,Urban_Area_km2,Urban_Percentage
 ...
 ```
 
-**Kurunegala_Forecast_2026_2030.csv**
+**Kurunegala_Forecast_2026_2030_LSTM.csv**
 ```csv
 Date,Predicted_Urban_km2,Lower_Bound_km2,Upper_Bound_km2
 2026-01-01,145.32,138.45,152.19
 ...
+```
+
+**Model_Comparison_Results.csv**
+```csv
+Model,MAE (km²),RMSE (km²),R²,MAPE (%)
+Prophet,2.45,3.21,0.95,1.85
+ARIMA,3.12,4.05,0.89,2.34
+Random Forest,2.78,3.56,0.92,2.10
+XGBoost,2.31,3.02,0.96,1.76
+LSTM,2.18,2.89,0.97,1.65
 ```
 
 ### 3. Visualizations (PNG)
@@ -580,11 +608,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ### Areas for Improvement
 
-- [ ] Add more prediction models (LSTM, XGBoost)
+- [x] Add more prediction models (LSTM, XGBoost) ✅ **Completed**
 - [ ] Include population data integration
 - [ ] Add web-based dashboard
 - [ ] Implement real-time monitoring
 - [ ] Add automated report generation
+- [ ] Ensemble predictions combining LSTM + XGBoost
+- [ ] GPU acceleration for LSTM training
 
 ---
 
@@ -628,6 +658,13 @@ If you use this project in your research, please cite:
 ---
 
 ## 🔄 Version History
+
+- **v1.1.0** (2025-Current) - Advanced modeling update
+  - Added XGBoost gradient boosting model
+  - Added LSTM deep learning model
+  - LSTM-based forecasting (2026-2030)
+  - Six-model comparison framework
+  - Iterative prediction with confidence intervals
 
 - **v1.0.0** (2025-12-07) - Initial release
   - Multi-index urban classification
